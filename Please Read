@@ -1,1 +1,3 @@
 These are a few scripts that simply demonstrate my understanding of unity scripting. Anything to do with inventory is not complete, but I still included it because there were a variety of principles applied.
+
+I left out my networking script since it is only for P2P Steam using their wrapper, and at the time I had guidance from my mentor.
