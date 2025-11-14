@@ -1,0 +1,44 @@
+using System.Text.RegularExpressions;
+using UnityEngine;
+
+public class UIHandler : MonoBehaviour
+{
+    [SerializeField] playerController playerController;
+
+    [SerializeField] GameObject[] UIToToggle;
+    [SerializeField] GameObject HUD;
+    int selectedUI = 0;
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            ToggleUI(0);
+        }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            CloseFromESC();
+        }
+    }
+
+    public void ToggleUI(int UIID)
+    {
+
+        //closes previous window so that 2 HUDS are not open at once
+        if (selectedUI != UIID)
+        {
+            UIToToggle[selectedUI].SetActive(false);
+        }
+            selectedUI = UIID;
+            HUD.SetActive(!HUD.activeSelf);
+            playerController.ToggleCursor(UIToToggle[UIID].activeSelf);
+            UIToToggle[UIID].SetActive(!UIToToggle[UIID].activeSelf);
+    }
+
+    private void CloseFromESC()
+    {
+        HUD.SetActive(true);
+        playerController.ToggleCursor(true);
+        UIToToggle[selectedUI].SetActive(false);
+    }
+}
