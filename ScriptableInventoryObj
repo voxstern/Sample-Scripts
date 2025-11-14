@@ -1,0 +1,17 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+[CreateAssetMenu(fileName = "Assets", menuName = "Inventory Object Information")]
+public class ScriptableInventoryObj : ScriptableObject
+{
+
+//Simplt a SO data structure to make it easy to create items for the game
+
+    public string title;
+    public string description;
+    public Sprite itemImage;
+    public bool isCountable;
+    public inventoryObj connectedObj;
+}
