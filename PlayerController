@@ -5,6 +5,11 @@ using Mirror;
 using UnityEngine.SceneManagement;
 public class PlayerController : NetworkBehaviour
 {
+        // This is a detailed player movemnt script used for a simple game with the basics of networking implimented using Mirror. 
+        // However, the networking is not fully formatted for a nearly developed game since this is a script I use for all early builds
+
+        //this script uses charecter controller not RB.
+
     //booleans to dictate main functions
     [Header("Restrictor Bools")]
     [SerializeField] private bool canTurn = true;
@@ -31,9 +36,9 @@ public class PlayerController : NetworkBehaviour
 
 
     [Header("Look Parameters")]
-    [SerializeField, Range(1, 10)] private float lookspeedX = 2.0f;
+    [SerializeField, Range(1, 10)] private float lookspeedX = 2.0f; //how fast you turn
     [SerializeField, Range(1, 10)] private float lookspeedY = 2.0f;
-    [SerializeField, Range(1, 180)] private float upperLookLimit = 80.0f;
+    [SerializeField, Range(1, 180)] private float upperLookLimit = 80.0f; // how far you can turn
     [SerializeField, Range(1, 180)] private float lowerLookLimit = 80.0f;
     [SerializeField] private float rotationX = 0;
     private bool shouldJump => Input.GetKeyDown(jumpKey) && (characterController.isGrounded);
@@ -51,12 +56,6 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float gravity = 30.0f;
 
 
-    [Header("Interaction")]
-    [SerializeField] private Vector3 interactionRayPoint = default;
-    [SerializeField] private LayerMask interactionLayer = default;
-    [SerializeField] private float interactionDistance = default;
-    private GameObject interactableObject;
-
     private void Awake()
     {
 
@@ -72,7 +71,7 @@ public class PlayerController : NetworkBehaviour
     }
     private void Update()
     {
-       if(isOwned)
+       if(isOwned) // ref to networking 
         {
 
             if (canTurn)
@@ -128,13 +127,27 @@ public class PlayerController : NetworkBehaviour
         transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookspeedX, 0);
     }
 
+    //Used to pause camera turn and allow player to view and use cursor
+    public void ToggleCursor(bool activate)
+    {
+        if (activate)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+            canTurn = true;
+        }
+        else
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.Confined;
+            canTurn = false;
+        }
+    }
 
-
-
+    //An enabler for traveling from lobby scene and game scene, is more so for debugging before properly congfiguring networking for a game.
     public void EnterGame()
     {
         this.enabled = true;
-        ptc.enabled = true;
         playerCamera.enabled = true;
 
         Cursor.visible = false;
