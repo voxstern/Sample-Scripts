@@ -1,0 +1,124 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+using Mirror;
+
+public class ZombieFollow : NetworkBehaviour
+{
+    //Another Old script, but it shows the basic use of Nav systems (the old one I believe but I do know the new one as well)
+
+
+
+    // This script is only for wave based zombies, they do not stop following
+
+    #region[waveBasedZom]
+    [Header("Wave Based Zom")]
+    //player managment
+    [SerializeField] GameObject[] players;
+   [SerializeField] GameObject nearestPlayer;
+
+    //distamce calc and dest set
+    float nearestDist = float.MaxValue;
+    bool isInitialized;
+
+    //timerVars
+    [SerializeField] float timeBewtwenScan;
+    [SerializeField] int maxTImeBeforeScan;
+
+    #endregion[waveBasedZom]
+
+    [Header("Nav and Detection based vars")]
+    [SerializeField] bool isWaveBased = true; // determines if the zombie the script is attached to is supposed to detect a player or not (turn off for wave based zombies)
+    [SerializeField] NavMeshAgent enemyNav;
+
+    [Header("Distance Based Zom Follow Vars")]
+    [SerializeField] int detectionRange;
+
+    private void Awake()
+    {
+
+ 
+        enemyNav = GetComponent<NavMeshAgent>();
+        if(isWaveBased)
+        StartCoroutine(StartPlayer());
+
+    }
+
+
+
+
+    private void Update()
+    {
+
+
+        if(isWaveBased)
+        WaveBasedZomManage();
+    }
+
+
+    #region[waveBaseZomReg]
+    private void WaveBasedZomManage()
+    {
+        if (nearestPlayer != null)
+        {
+            enemyNav.SetDestination(nearestPlayer.transform.position);
+        }
+        else
+        {
+            if (isInitialized) // makes sure that the players are referenced and spawned
+
+                FindNearestPlayer();
+        }
+
+
+        //Timer to recalc nearest Player
+        if (timeBewtwenScan <= 0)
+        {
+            FindNearestPlayer();
+            timeBewtwenScan = maxTImeBeforeScan;
+        }
+
+        timeBewtwenScan -= Time.deltaTime;
+    }
+
+    IEnumerator StartPlayer()
+    {
+        float timer = 1f;
+
+        while (timer >= 0)
+        {
+            timer -= Time.deltaTime;
+            yield return null;
+        }
+        players = GameObject.FindGameObjectsWithTag("player");
+        isInitialized = true;
+        FindNearestPlayer();
+    }
+    //Locates the closest Player
+    private void FindNearestPlayer()
+    {
+        for (int i = 0; i < players.Length; i++)
+        {
+            float distance = (players[i].transform.position - gameObject.transform.position).sqrMagnitude;
+
+            if (distance < nearestDist || nearestPlayer == null)
+            {
+                nearestDist = distance;
+                nearestPlayer = players[i];
+            }
+        }
+    }
+    #endregion
+
+    #region[distancebasedzom]
+
+    private void CheckIfInRange()
+    {
+
+    }
+
+
+
+    #endregion
+}
