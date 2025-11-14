@@ -1,0 +1,147 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using Mirror;
+using UnityEngine.SceneManagement;
+public class PlayerController : NetworkBehaviour
+{
+    //booleans to dictate main functions
+    [Header("Restrictor Bools")]
+    [SerializeField] private bool canTurn = true;
+    [SerializeField] private bool canSprint = true;
+    [SerializeField] private bool canMove = true;
+    [SerializeField] private bool gravityOn = true;
+    private bool isSprinting => canSprint && Input.GetKey(sprintKey);
+
+    //keycodes for future rebinds
+    [Header("Controls")]
+    [SerializeField] private KeyCode sprintKey = KeyCode.LeftShift;
+    [SerializeField] private KeyCode jumpKey = KeyCode.Space;
+    [SerializeField] private KeyCode interactKey = KeyCode.E;
+    [SerializeField] private KeyCode crouchKey = KeyCode.LeftControl;
+
+    //movement speed dictrators
+    [Header("Movement Parameters")]
+    [SerializeField] private float walkSpeed = 30.0f;
+    [SerializeField] private float sprintSpeed = 60.0f;
+    [SerializeField] private float crouchSpeed = 15.0f;
+     [SerializeField]private Vector3 moveDirection;
+    private Vector2 currentInput;
+
+
+
+    [Header("Look Parameters")]
+    [SerializeField, Range(1, 10)] private float lookspeedX = 2.0f;
+    [SerializeField, Range(1, 10)] private float lookspeedY = 2.0f;
+    [SerializeField, Range(1, 180)] private float upperLookLimit = 80.0f;
+    [SerializeField, Range(1, 180)] private float lowerLookLimit = 80.0f;
+    [SerializeField] private float rotationX = 0;
+    private bool shouldJump => Input.GetKeyDown(jumpKey) && (characterController.isGrounded);
+
+
+    // main components
+    [Header("components")]
+    public Camera playerCamera;
+    [SerializeField] private CharacterController characterController;
+
+
+
+    [Header("Jump Stuff")]
+    [SerializeField] private float jumpForce = 8.0f;
+    [SerializeField] private float gravity = 30.0f;
+
+
+    [Header("Interaction")]
+    [SerializeField] private Vector3 interactionRayPoint = default;
+    [SerializeField] private LayerMask interactionLayer = default;
+    [SerializeField] private float interactionDistance = default;
+    private GameObject interactableObject;
+
+    private void Awake()
+    {
+
+        characterController = GetComponent<CharacterController>();
+       // EnterGame();
+       
+    }
+    private void Start()
+    {
+        //   EnterGame();
+        SceneManager.MoveGameObjectToScene(gameObject, SceneManager.GetActiveScene());
+
+    }
+    private void Update()
+    {
+       if(isOwned)
+        {
+
+            if (canTurn)
+                HandleMouseLook();
+
+
+
+            if (canMove)
+                CheckForMovement();
+            ApplyFinalMovements();
+            HandleJump();
+
+            if (canAbility && Input.GetKeyDown(abilityKey))
+            {
+                ExecuteAbility();
+            }
+        }
+    }
+
+
+    //handles movement input
+    private void CheckForMovement()
+    {
+        //Lets player sprint Horizontal as well, can change by removing the ? shorthand boolean and sprintspeed modifier.
+        currentInput = new Vector2((isSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Vertical"), (isSprinting ? sprintSpeed : walkSpeed) * Input.GetAxis("Horizontal"));
+
+        float moveDirectionY = moveDirection.y;
+        moveDirection = (transform.TransformDirection(currentInput.x * Vector3.forward)) + (transform.TransformDirection(currentInput.y * Vector3.right));
+        moveDirection.y = moveDirectionY;
+    }
+
+    private void ApplyFinalMovements()
+    {
+
+        characterController.Move(moveDirection * Time.deltaTime);
+
+        if (!characterController.isGrounded && gravityOn)
+            moveDirection.y -= gravity * Time.deltaTime;
+
+    }
+
+    private void HandleJump()
+    {
+        if (shouldJump)
+            moveDirection.y = jumpForce;
+    }
+
+    private void HandleMouseLook()
+    {
+        rotationX -= Input.GetAxis("Mouse Y") * lookspeedY;
+        rotationX = Mathf.Clamp(rotationX, -upperLookLimit, lowerLookLimit);
+        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookspeedX, 0);
+    }
+
+
+
+
+    public void EnterGame()
+    {
+        this.enabled = true;
+        ptc.enabled = true;
+        playerCamera.enabled = true;
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+        hud.SetActive(true);
+    }
+
+
+
+}
