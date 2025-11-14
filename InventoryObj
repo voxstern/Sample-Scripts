@@ -1,0 +1,53 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+public class InventoryObj : MonoBehaviour
+{
+    //This is only added as a reference to the incomplete InventorySystem, but it does show my ability to impliment error handling?
+
+    // public GameObject origionalObject;    Add back when Pickup from interacting is implimented
+    public GameObject inventoryPrefab;
+    public int count = 1;
+    public bool isCountable;
+
+
+
+    [Header("Object Details and Info")]
+    [SerializeField] private TMP_Text title;
+    [SerializeField] TMP_Text description;
+    [SerializeField] Image itemImage;
+    public scriptableInventoryObj objectInformation = null;
+    [SerializeField] Sprite image;
+    [SerializeField] inventorySystem inventory;
+
+
+
+    public virtual void EquipObject(TMP_Text titleTxt, TMP_Text descrpTxt = null, Image itemImg = null)
+    {
+      // not yet implimented
+    }
+
+    public virtual void InitializeItem()
+    {
+        if (objectInformation != null)
+        {
+            itemImage.sprite = objectInformation.itemImage;
+            isCountable = objectInformation.isCountable;
+            objectInformation.connectedObj = this;
+            Debug.Log(objectInformation.connectedObj);
+        }
+        else
+        {
+            Debug.LogWarning("This Item Cannot Be Initialized, ObjectInformation Is Null");
+        }
+    }
+
+    public void TransferObjInfo()
+    {
+        title.text = objectInformation.title;
+        description.text = objectInformation.description;
+
+    }
