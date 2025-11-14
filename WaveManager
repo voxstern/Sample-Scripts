@@ -1,0 +1,78 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class WaveManager : MonoBehaviour
+{
+    //This is an old and simple script used to spawn hordes withing a set time, and after zombies are gone.
+
+
+
+    [Header("Wave and Zom Manage Var")]
+    [SerializeField] int zombiesLeft; //zombies alive in curr wave @ 0 start next
+    [SerializeField] int zombiePointsToSpawn; // totalzombies left to spawn (or value of zombies)
+    [SerializeField] int waveNum = 1; //# wave in game resets to 1 on game over
+    [SerializeField] float timeBetweenWaves; // Time In between waves
+    [SerializeField] int maxTBW;
+
+
+    [SerializeField] GameObject enemy; // base enemy to spawn
+
+
+
+
+    [Header("Spawn Points")]
+    [SerializeField] Transform[] spawnPoints;
+    //[SerializeField] Transform[] unlockedSP;
+    [SerializeField] List<Transform> unlockedSP;
+
+    //spawnsZombies at various  spawnpoints
+    private void SpawnZombies()
+    {
+
+        for (int i = 0; i < zombiePointsToSpawn; i++)
+        {
+            int spawnPoint = (Random.Range(0, unlockedSP.Count));
+            Instantiate(enemy, unlockedSP[spawnPoint].position + new Vector3(0, 4, 0), transform.rotation);
+            zombiesLeft += 1;
+        }
+        zombiePointsToSpawn = 0;
+        Debug.Log(zombiesLeft);
+    }
+
+
+    //Calculates the total amount of zombies spawned each round
+    private void AssighnZombiePoints()
+    {
+        zombiePointsToSpawn = (5 + ((2* waveNum) * 2) * 1);
+    }
+
+    private void Start()
+    {
+        AssighnZombiePoints();
+        SpawnZombies();
+    }
+
+    private void Update()
+    {
+        //resets wave 
+        if(zombiesLeft == 0)
+        {
+
+            if (timeBetweenWaves <= 0)
+            {
+                waveNum += 1;
+                Debug.Log("you are on wave num " + waveNum);
+                AssighnZombiePoints();
+                SpawnZombies();
+                timeBetweenWaves = maxTBW;
+            }
+            else
+            {
+                timeBetweenWaves -= Time.deltaTime;
+            }
+
+        }
+    }
+
+}
