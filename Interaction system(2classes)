@@ -4,7 +4,7 @@ using UnityEngine;
 public interface interactableObject
 {
 
-    //Sets up an interface for interacting
+    //Sets up an interface for interacting   simply import the methods, change the prompt Msg in the script and assighn values, it should work with interactor class.
     public string prompMsg { get;}
     public abstract void Interact(inventorySystem inventory = null);
 
