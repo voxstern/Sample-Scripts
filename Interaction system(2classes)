@@ -1,0 +1,79 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+public interface interactableObject
+{
+
+    //Sets up an interface for interacting
+    public string prompMsg { get;}
+    public abstract void Interact(inventorySystem inventory = null);
+
+
+}
+
+
+//Down here is the Interactor class typically placed on the player
+
+
+
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TMPro;
+
+public class Interactor : MonoBehaviour
+{
+    //This interaction system outputs a raycast, may not be frame efficient
+
+    [SerializeField] Camera playerCam; // player camera for Raycast
+    [SerializeField] TMP_Text promptTxt; //what displays when you look at an object to interact with
+    [SerializeField] float interactDist; // how far can you interact from
+
+
+    interactableObject currentInteractable; // The object that the player is currently looking at / attempting to interact with
+    [SerializeField] inventorySystem invin;
+    private void Update()
+    {
+        UpdateCurrentInteractable();
+
+        UpdateText();
+
+        CheckForInteract();
+
+        Debug.Log(currentInteractable);
+    }
+
+    private void UpdateCurrentInteractable()
+    {
+
+        var ray = playerCam.ViewportPointToRay(new Vector2(0.5f, 0.5f));
+
+        Physics.Raycast(ray, out var hit, interactDist);
+        if(hit.collider != null)
+            currentInteractable = hit.collider.GetComponent<interactableObject>();
+    }
+
+    private void UpdateText()
+    {
+        if (currentInteractable == null)
+        {
+            promptTxt.text = string.Empty;
+            return;
+        }
+
+        promptTxt.text = currentInteractable.prompMsg;
+
+
+    }
+
+    private void CheckForInteract()
+    {
+
+        if (Input.GetKeyDown(KeyCode.E) && currentInteractable != null)
+        {
+            currentInteractable.Interact(invin);
+        }
+
+    }
+
+}
