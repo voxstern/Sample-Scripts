@@ -5,10 +5,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InventorySystem : MonoBehaviour
+
+public class inventorySystem : MonoBehaviour
 {
-  // I would not normaly post a script that I am currently working on, but this is my one and done inventory system. I would not refer to the optimization of the code, 
-   //I included this to demonstrate the use of tooltips and easy to use systems for groups. It still needs a lot of work and can only really add objects.
 
 
     #region variables
@@ -62,7 +61,7 @@ public class InventorySystem : MonoBehaviour
 
 
     [SerializeField]
-    [Tooltip("The inventorySlot selected *For Simple Debug*")] // I would normally just turn on debug but I found that when this reference is a problem it is a pain to deal with in debug mode.
+    [Tooltip("The inventorySlot selected *For Debug*")]
     inventoryObj selectedInventorySlot;
 
     [SerializeField] inventoryObj[] inventorySlots;// This is only if there is a list of prededicated slots.
@@ -127,14 +126,16 @@ public class InventorySystem : MonoBehaviour
         for (int i = 0; i < inventorySlots.Length; i++)
         {
             
-            if (inventorySlots[i].GetComponentInChildren<inventoryObj>().objectInformation == null)
+            if (inventorySlots[i].objectInformation == null)
             {
                 selectedInventorySlot = inventorySlots[i];
+                Debug.Log("this is the selected slot" + selectedInventorySlot);
+                Debug.Log(isInventoryFull);
                 return;
             }
-            else
+            else if(i + 1 == inventorySlots.Length) 
             {
-                isInventoryFull = true;
+               isInventoryFull = true;
             }
         }
     }
@@ -147,7 +148,7 @@ public class InventorySystem : MonoBehaviour
 
     public void SelectInventoryObject(int num)
     {
-        selectedInventoryObject = inventoryslots[num].objectInformation;
+        selectedInventoryObject = inventoryObjects[num].objectInformation;
     }
 
     public void AddItemFromButton(scriptableInventoryObj itemToAdd)
@@ -188,8 +189,13 @@ public class InventorySystem : MonoBehaviour
             {
                 //add to empty slot
                 CheckForEmptyslots();
-                itemToAdd.connectedObj = selectedInventorySlot.GetComponent<inventoryObj>();
-                PutItemInSlot(itemToAdd, selectedInventorySlot);
+                Debug.Log(isInventoryFull);
+
+                if (!isInventoryFull)
+                {
+                    itemToAdd.connectedObj = selectedInventorySlot.GetComponent<inventoryObj>();
+                    PutItemInSlot(itemToAdd, selectedInventorySlot);
+                }
 
             }
         }
@@ -221,7 +227,7 @@ public class InventorySystem : MonoBehaviour
         inventorySlotPrefabs.GetComponent<RectTransform>().localPosition = newSlotSpawnLocation;
         inventorySlotPrefabs.GetComponent<inventoryObj>().objectInformation = item;
         inventorySlotPrefabs.GetComponent<inventoryObj>().InitializeItem();
-        inventorySlots.Add(inventorySlotPrefab.GetComponent<inventoryObj>());
+        inventoryObjects.Add(inventorySlotPrefab.GetComponent<inventoryObj>());
         currUsedInventorySlots += 1;
         newSlotSpawnLocation = CalculateSpawnPosition(newSlotSpawnLocation);
     }
@@ -250,13 +256,26 @@ public class InventorySystem : MonoBehaviour
 
     }
 
+    public void CheckForObject()
+    {
+
+    }
 
     //drag and drop 
+
     //delete
+
+
     //drop item
     //split item
     //update invin info (slots left amount of slots used etc)
+
     // make into list so invin can grow on infinite
+
+    //check for empty slots will most likely have a bug
+
+    //add a way to include scritable objs?
+
 
 
 }
