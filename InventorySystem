@@ -103,6 +103,7 @@ public class inventorySystem : MonoBehaviour
     [SerializeField]
     [Tooltip("Where the first slot is")]
     Vector2 origionalSpawnLocation;
+    inventoryObj[] cachedSlots;
 
     #endregion
 
@@ -140,9 +141,14 @@ public class inventorySystem : MonoBehaviour
         }
     }
 
-    private void Start()
-    {
+    void Awake() {
         newSlotSpawnLocation = origionalSpawnLocation;
+
+        //Cache the GetComponent for preformance when referencing later
+
+        cachedSlots = new inventoryObj[inventorySlots.Length];
+        for (int i=0; i<inventorySlots.Length; i++)
+            cachedSlots[i] = inventorySlots[i].GetComponent<inventoryObj>();
     }
 
 
@@ -160,20 +166,21 @@ public class inventorySystem : MonoBehaviour
     {
 
         //check to see if we already have item and if we do, add to the count of that item
-        if (areItemsStackable && itemToAdd.isCountable)
+    if (areItemsStackable && itemToAdd.isCountable)
+    {
+        Debug.Log("Adding Count to Obj");
+        for (int i = 0; i < cachedSlots.Length; i++)
         {
-            Debug.Log("Adding Count to Obj");
-            for (int i = 0; i < inventorySlots.Length; i++)
+            var slot = cachedSlots[i];
+            if (slot.objectInformation == itemToAdd && slot.count + amountToAdd <= maxCount)
             {
-                selectedInventoryObject = inventorySlots[i].GetComponent<inventoryObj>().objectInformation;
-                if (selectedInventoryObject == itemToAdd && inventorySlots[i].GetComponent<inventoryObj>().count + amountToAdd <= maxCount)
-                {
-                    inventorySlots[i].GetComponent<inventoryObj>().count += amountToAdd;
-                    Debug.Log("Adding To Inventorys Count");
-                    return;
-                }
+                slot.count += amountToAdd;
+                Debug.Log("Added to inventory slot: " + i);
+                return;
             }
         }
+    }
+
 
 
         isInventoryFull = CheckForOpenSlots(isInventoryFull);
