@@ -67,42 +67,8 @@ public class inventorySystem : MonoBehaviour
     [SerializeField] inventoryObj[] inventorySlots;// This is only if there is a list of prededicated slots.
 
     scriptableInventoryObj selectedInventoryObject; // the object that the player has manually selected OR the object that the inventory is currently using to
-                                                    // remove add or update a slot
-                                                  
-    [Space]
-    [Header("Visual layout")]
 
     [SerializeField]
-    [Tooltip("Will the script have to permenantly add and remove empty slots")]
-    bool needCreateSlot;
-
-    [SerializeField]
-    [Tooltip("How many slots can fit in a horrizontal row")]
-    int amountInrow;
-
-    [SerializeField]
-    [Tooltip("The maximum amount of Space in the X axis for a single row")]
-    int maxXDistance;
-
-    [SerializeField]
-    [Tooltip("The list of inventory Objects")]
-    int SpaceBetweenRows;
-
-    [SerializeField]
-    [Tooltip("The list of inventory Objects")]
-    int amountForNewX;
-
-    [SerializeField]
-    [Tooltip("The width and height of the viewports container, note that it is not actually a position, but I am using a vector 2 as a tuple")]
-    Vector2 containerSize;
-
-    [SerializeField]
-    [Tooltip("Where the next slot will be")]
-    Vector2 newSlotSpawnLocation;
-
-    [SerializeField]
-    [Tooltip("Where the first slot is")]
-    Vector2 origionalSpawnLocation;
     inventoryObj[] cachedSlots;
 
     #endregion
