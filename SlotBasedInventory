@@ -75,16 +75,16 @@ public class InventorySystem : MonoBehaviour
     /// <summary>
     /// Removes an item from the inventory.
     /// </summary>
-    public void RemoveItem(inventoryObj itemToRemove, int amount)
+    public void RemoveItem(InventoryObj slot, int amount)
     {
-        if (itemToRemove == null) return;
-
-        itemToRemove.count -= amount;
-        if (itemToRemove.count <= 0)
+        if (slot != null)
         {
-            itemToRemove.objectInformation = null;
-            currUsedInventorySlots--;
-            inventoryObjects.Remove(itemToRemove);
+            slot.Remove(amount); // use encapsulated method in InventoryObj
+            if (slot.count == 0)
+            {
+                currUsedInventorySlots--;
+            }
         }
     }
+}
 }
