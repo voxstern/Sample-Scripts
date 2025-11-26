@@ -1,0 +1,76 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SpawnBasedInventorySystem : MonoBehaviour
+{
+  //Inventory system that spawns new slots. 
+
+    [Header("Inventory Capacity")]
+    [SerializeField] private bool isAMaxInvinSlots = true;
+    [SerializeField] private int unlockedInventorySlots = 20;
+    [SerializeField] private int currUsedInventorySlots = 0;
+    [SerializeField] private int maxCount = 99;
+
+    [Header("Inventory Objects")]
+    [SerializeField] private GameObject inventorySlotPrefab;
+    [SerializeField] private bool areItemsStackable = true;
+
+    [SerializeField] private List<inventoryObj> inventoryObjects = new List<inventoryObj>();
+    [SerializeField] private inventoryObj[] inventorySlots;
+    private inventoryObj[] cachedSlots;
+
+    private void Awake()
+    {
+        // Cache slot components for performance
+        cachedSlots = new inventoryObj[inventorySlots.Length];
+        for (int i = 0; i < inventorySlots.Length; i++)
+        {
+            cachedSlots[i] = inventorySlots[i].GetComponent<inventoryObj>();
+        }
+    }
+
+    /// <summary>
+    /// Adds an item to the inventory, stacking if possible, or creating a new slot prefab.
+    /// </summary>
+    public void AddItem(scriptableInventoryObj itemToAdd, int amountToAdd = 1)
+    {
+        // Attempt to stack
+        if (areItemsStackable && itemToAdd.isCountable)
+        {
+            for (int i = 0; i < cachedSlots.Length; i++)
+            {
+                var slot = cachedSlots[i];
+                if (slot.objectInformation == itemToAdd && slot.count + amountToAdd <= maxCount)
+                {
+                    slot.count += amountToAdd;
+                    Debug.Log($"Added {amountToAdd} to existing slot {i}");
+                    return;
+                }
+            }
+        }
+
+        // Check inventory capacity
+        if (isAMaxInvinSlots && currUsedInventorySlots >= unlockedInventorySlots)
+        {
+            Debug.LogWarning("Inventory is full!");
+            return;
+        }
+
+        // Spawn a new slot prefab
+        SpawnNewItem(itemToAdd);
+    }
+
+    /// <summary>
+    /// Spawns a new inventory slot prefab for the given item.
+    /// </summary>
+    private void SpawnNewItem(scriptableInventoryObj item)
+    {
+        GameObject slotGO = Instantiate(inventorySlotPrefab, transform);
+        inventoryObj slot = slotGO.GetComponent<inventoryObj>();
+        slot.objectInformation = item;
+        slot.InitializeItem();
+        inventoryObjects.Add(slot);
+        currUsedInventorySlots++;
+        Debug.Log("Spawned new inventory slot");
+    }
+}
