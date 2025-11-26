@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class InventorySystem : MonoBehaviour
 {
-    //Not completely finihed, still needs a few methods for polishing.
+    //Not completely finihed, still needs a few methods for polishing. - Removing item does not update on front end - 
 
     [Header("Inventory Capacity")]
     [SerializeField] private bool isAMaxInventorySlots = true;
