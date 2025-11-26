@@ -1,199 +1,90 @@
-using System.Collections;
-
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.UI;
 
-
-public class inventorySystem : MonoBehaviour
+public class InventorySystem : MonoBehaviour
 {
+    //Not completely finihed, still needs a few methods for polishing.
 
-    //This is a simplified verion of the inventory script that is only for premade slots, rather than the option to have both, just increases performace
-    #region variables
     [Header("Inventory Capacity")]
+    [SerializeField] private bool isAMaxInventorySlots = true;
+    [SerializeField] private int unlockedInventorySlots = 20;
+    [SerializeField] private int currUsedInventorySlots = 0;
+    [SerializeField] private int maxCount = 99;
 
-    [SerializeField]
-    [Tooltip("Is there any open slots in the inventory?")]
-    bool isInventoryFull;
-
-    [SerializeField]
-    [Tooltip("Is there a maximum amount of inventory slots?")]
-    bool isAMaxInvinSlots;
-    [Space]
-
-    [SerializeField]
-    [Tooltip("The total amount of inventory slots the player has acces to at this current moment, including slots already used")]
-    int unlockedInventorySlots;
-
-    [SerializeField]
-    [Tooltip("The total amount of currently used inventory slots")]
-    int currUsedInventorySlots;
-
-    [SerializeField]
-    [Tooltip("The absolute maximum amount of inventoryslots obtainable")]
-    int totalAmountOfpossibleInventorySlots;
-
-    [SerializeField]
-    [Tooltip("Define how many slots are unlocked when upgraded")]
-    int inventorySlotUpgradeAmount;
-
-    [Space]
     [Header("Inventory Objects")]
+    [SerializeField] private GameObject inventorySlotPrefab;
+    [SerializeField] private inventoryObj[] inventorySlots; // Pre-made slots
+    [SerializeField] private bool areItemsStackable = true;
 
-    [SerializeField]
-    [Tooltip("The max number of an item the inventory slot can hold")]
-    int maxCount;
+    private inventoryObj[] cachedSlots;
+    private List<inventoryObj> inventoryObjects = new List<inventoryObj>();
 
-    [SerializeField]
-    [Tooltip("The total amount of inventory slots the player has acces to at this current moment, including slots already used")]
-    GameObject inventorySlotPrefab;
-
-    [SerializeField]
-    [Tooltip("The list of inventory Objects")]
-    List<inventoryObj> inventoryObjects = new List<inventoryObj>();
-
-    [Space]
-
-
-    [SerializeField]
-    [Tooltip("The inventorySlot selected *For Debug*")]
-    inventoryObj selectedInventorySlot;
-
-    [SerializeField] inventoryObj[] inventorySlots;// This is only if there is a list of prededicated slots.
-
-    scriptableInventoryObj selectedInventoryObject; // the object that the player has manually selected OR the object that the inventory is currently using to
-
-    [SerializeField]
-    inventoryObj[] cachedSlots;
-
-    #endregion
-
-    private bool CheckForOpenSlots(bool isFull) //Search to see if there are any unused slots
+    private void Awake()
     {
-        if (isAMaxInvinSlots && currUsedInventorySlots >= unlockedInventorySlots)
-        {
-            isFull = true;
-        }
-        else
-        {
-            isFull = false;
-            Debug.Log(unlockedInventorySlots - currUsedInventorySlots + " Slots Left");
-        }
-
-        return isFull;
-    }
-
-
-    private void CheckForEmptyslots()
-    {
+        // Cache components for performance
+        cachedSlots = new inventoryObj[inventorySlots.Length];
         for (int i = 0; i < inventorySlots.Length; i++)
         {
-            
-            if (inventorySlots[i].objectInformation == null)
-            {
-                selectedInventorySlot = inventorySlots[i];
-                Debug.Log("this is the selected slot" + selectedInventorySlot);
-                Debug.Log(isInventoryFull);
-                return;
-            }
-            else if(i + 1 == inventorySlots.Length) 
-            {
-               isInventoryFull = true;
-            }
+            cachedSlots[i] = inventorySlots[i].GetComponent<inventoryObj>();
         }
     }
 
-    void Awake() {
-        //Cache the GetComponent for preformance when referencing later
-        cachedSlots = new inventoryObj[inventorySlots.Length];
-        for (int i=0; i<inventorySlots.Length; i++)
-            cachedSlots[i] = inventorySlots[i].GetComponent<inventoryObj>();
-    }
-
-
-    public void SelectInventoryObject(int num)
-    {
-        selectedInventoryObject = inventoryObjects[num].objectInformation;
-    }
-
-    public void AddItemFromButton(scriptableInventoryObj itemToAdd)
-    {
-        AddItem(itemToAdd);
-    }
-
+    /// <summary>
+    /// Adds an item to the inventory. Stacks if possible; otherwise, puts it in an empty slot.
+    /// </summary>
     public void AddItem(scriptableInventoryObj itemToAdd, int amountToAdd = 1)
     {
-
-        //check to see if we already have item and if we do, add to the count of that item
-      if (itemToAdd.isCountable)
-      {
-          Debug.Log("Adding Count to Obj");
-          for (int i = 0; i < cachedSlots.Length; i++)
-          {
-              var slot = cachedSlots[i];
-              if (slot.objectInformation == itemToAdd && slot.count + amountToAdd <= maxCount)
-              {
-                  slot.count += amountToAdd;
-                  Debug.Log("Added to inventory slot: " + i);
-                  return;
-              }
-          }
-      }
-
-
-        isInventoryFull = CheckForOpenSlots(isInventoryFull);
-        if (!isInventoryFull)
+        if (areItemsStackable && itemToAdd.isCountable)
         {
-                //add to empty slot
-                CheckForEmptyslots();
-                Debug.Log(isInventoryFull);
-
-                if (!isInventoryFull)
-                {
-                    itemToAdd.connectedObj = selectedInventorySlot.GetComponent<inventoryObj>();
-                    PutItemInSlot(itemToAdd, selectedInventorySlot);
-                }
-        }
-        else
-        {
-            Debug.Log("inventory is full");
-        }
-    }
-
-
-    private void RemoveItem(inventoryObj itemToRemove, int amount)
-    {
-        if (needCreateSlot)
-        {
-            if (itemToRemove.count > 1)
+            for (int i = 0; i < cachedSlots.Length; i++)
             {
-
+                var slot = cachedSlots[i];
+                if (slot.objectInformation == itemToAdd && slot.count + amountToAdd <= maxCount)
+                {
+                    slot.count += amountToAdd;
+                    Debug.Log($"Added {amountToAdd} to existing slot {i}");
+                    return;
+                }
             }
         }
-        else
-        {
 
+        // Check if inventory is full
+        if (isAMaxInventorySlots && currUsedInventorySlots >= unlockedInventorySlots)
+        {
+            Debug.LogWarning("Inventory is full!");
+            return;
+        }
+
+        // Put in an empty slot
+        for (int i = 0; i < cachedSlots.Length; i++)
+        {
+            var slot = cachedSlots[i];
+            if (slot.objectInformation == null)
+            {
+                slot.objectInformation = itemToAdd;
+                slot.count = amountToAdd;
+                slot.InitializeItem();
+                currUsedInventorySlots++;
+                inventoryObjects.Add(slot);
+                Debug.Log($"Added {itemToAdd.name} to empty slot {i}");
+                return;
+            }
         }
     }
 
-    public void CheckForObject()
+    /// <summary>
+    /// Removes an item from the inventory.
+    /// </summary>
+    public void RemoveItem(inventoryObj itemToRemove, int amount)
     {
+        if (itemToRemove == null) return;
 
+        itemToRemove.count -= amount;
+        if (itemToRemove.count <= 0)
+        {
+            itemToRemove.objectInformation = null;
+            currUsedInventorySlots--;
+            inventoryObjects.Remove(itemToRemove);
+        }
     }
-
-    //drag and drop 
-
-    //delete
-
-
-    //drop item
-    //split item
-    //update invin info (slots left amount of slots used etc)
-
-    // make into list so invin can grow on infinite
-
-    //check for empty slots will most likely have a bug
-
-    //add a way to include scritable objs?
 }
