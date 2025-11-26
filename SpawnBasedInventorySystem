@@ -3,7 +3,8 @@ using UnityEngine;
 
 public class SpawnBasedInventorySystem : MonoBehaviour
 {
-  //Inventory system that spawns new slots. 
+  //Inventory system that spawns new slots. Does not have a feature to remove the slot if count == 0
+
 
     [Header("Inventory Capacity")]
     [SerializeField] private bool isAMaxInvinSlots = true;
@@ -72,5 +73,17 @@ public class SpawnBasedInventorySystem : MonoBehaviour
         inventoryObjects.Add(slot);
         currUsedInventorySlots++;
         Debug.Log("Spawned new inventory slot");
+    }
+
+    public void RemoveItem(InventoryObj slot, int amount)
+    {
+        if (slot != null)
+        {
+            slot.Remove(amount); // use encapsulated method in InventoryObj
+            if (slot.count == 0)
+            {
+                currUsedInventorySlots--;
+            }
+        }
     }
 }
