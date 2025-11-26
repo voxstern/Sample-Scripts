@@ -1,0 +1,244 @@
+using System.Collections;
+
+using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UI;
+
+
+public class inventorySystem : MonoBehaviour
+{
+
+    //This is a VERY general inventory system that forsakes performance for customizability. Some important notes is that there is not encapsulation and that the optimization is poor since there are 
+    // Alot of checks to make sure it is the customized version the user wants. When I use this script, I often delete a section that I do not need. 
+    #region variables
+    [Header("Inventory Capacity")]
+
+    [SerializeField]
+    [Tooltip("Is there any open slots in the inventory?")]
+    bool isInventoryFull;
+
+    [SerializeField]
+    [Tooltip("Is there a maximum amount of inventory slots?")]
+    bool isAMaxInvinSlots;
+    [Space]
+
+    [SerializeField]
+    [Tooltip("The total amount of inventory slots the player has acces to at this current moment, including slots already used")]
+    int unlockedInventorySlots;
+
+    [SerializeField]
+    [Tooltip("The total amount of currently used inventory slots")]
+    int currUsedInventorySlots;
+
+    [SerializeField]
+    [Tooltip("The absolute maximum amount of inventoryslots obtainable")]
+    int totalAmountOfpossibleInventorySlots;
+
+    [SerializeField]
+    [Tooltip("Define how many slots are unlocked when upgraded")]
+    int inventorySlotUpgradeAmount;
+
+    [Space]
+    [Header("Inventory Objects")]
+
+    [SerializeField]
+    [Tooltip("Are some items able to be stacked in this inventory?")]
+    bool areItemsStackable;
+
+    [SerializeField]
+    [Tooltip("The max number of an item the inventory slot can hold")]
+    int maxCount;
+
+    [SerializeField]
+    [Tooltip("The total amount of inventory slots the player has acces to at this current moment, including slots already used")]
+    GameObject inventorySlotPrefab;
+
+    [SerializeField]
+    [Tooltip("The list of inventory Objects")]
+    List<inventoryObj> inventoryObjects = new List<inventoryObj>();
+
+    [Space]
+
+
+    [SerializeField]
+    [Tooltip("The inventorySlot selected *For Debug*")]
+    inventoryObj selectedInventorySlot;
+
+    [SerializeField] inventoryObj[] inventorySlots;// This is only if there is a list of prededicated slots.
+
+    scriptableInventoryObj selectedInventoryObject; // the object that the player has manually selected OR the object that the inventory is currently using to
+                                                    // remove add or update a slot
+                                                  
+    [Space]
+    [Header("Visual layout")]
+
+    [SerializeField]
+    [Tooltip("Will the script have to permenantly add and remove empty slots")]
+    bool needCreateSlot;
+
+    [SerializeField]
+    [Tooltip("How many slots can fit in a horrizontal row")]
+    int amountInrow;
+
+    [SerializeField]
+    [Tooltip("The maximum amount of Space in the X axis for a single row")]
+    int maxXDistance;
+
+    [SerializeField]
+    [Tooltip("The list of inventory Objects")]
+    int SpaceBetweenRows;
+
+    [SerializeField]
+    [Tooltip("The list of inventory Objects")]
+    int amountForNewX;
+
+    [SerializeField]
+    [Tooltip("The width and height of the viewports container, note that it is not actually a position, but I am using a vector 2 as a tuple")]
+    Vector2 containerSize;
+
+    [SerializeField]
+    [Tooltip("Where the next slot will be")]
+    Vector2 newSlotSpawnLocation;
+
+    [SerializeField]
+    [Tooltip("Where the first slot is")]
+    Vector2 origionalSpawnLocation;
+    inventoryObj[] cachedSlots;
+
+    #endregion
+
+    private bool CheckForOpenSlots(bool isFull) //Search to see if there are any unused slots
+    {
+        if (isAMaxInvinSlots && currUsedInventorySlots >= unlockedInventorySlots)
+        {
+            isFull = true;
+        }
+        else
+        {
+            isFull = false;
+            Debug.Log(unlockedInventorySlots - currUsedInventorySlots + " Slots Left");
+        }
+
+        return isFull;
+    }
+
+
+    private void CheckForEmptyslots()
+    {
+        for (int i = 0; i < inventorySlots.Length; i++)
+        {
+            
+            if (inventorySlots[i].objectInformation == null)
+            {
+                selectedInventorySlot = inventorySlots[i];
+                Debug.Log("this is the selected slot" + selectedInventorySlot);
+                Debug.Log(isInventoryFull);
+                return;
+            }
+            else if(i + 1 == inventorySlots.Length) 
+            {
+               isInventoryFull = true;
+            }
+        }
+    }
+
+    void Awake() {
+        newSlotSpawnLocation = origionalSpawnLocation;
+
+        //Cache the GetComponent for preformance when referencing later
+
+        cachedSlots = new inventoryObj[inventorySlots.Length];
+        for (int i=0; i<inventorySlots.Length; i++)
+            cachedSlots[i] = inventorySlots[i].GetComponent<inventoryObj>();
+    }
+
+
+    public void SelectInventoryObject(int num)
+    {
+        selectedInventoryObject = inventoryObjects[num].objectInformation;
+    }
+
+    public void AddItemFromButton(scriptableInventoryObj itemToAdd)
+    {
+        AddItem(itemToAdd);
+    }
+
+    public void AddItem(scriptableInventoryObj itemToAdd, int amountToAdd = 1)
+    {
+
+        //check to see if we already have item and if we do, add to the count of that item
+      if (areItemsStackable && itemToAdd.isCountable)
+      {
+          Debug.Log("Adding Count to Obj");
+          for (int i = 0; i < cachedSlots.Length; i++)
+          {
+              var slot = cachedSlots[i];
+              if (slot.objectInformation == itemToAdd && slot.count + amountToAdd <= maxCount)
+              {
+                  slot.count += amountToAdd;
+                  Debug.Log("Added to inventory slot: " + i);
+                  return;
+              }
+          }
+      }
+
+
+        isInventoryFull = CheckForOpenSlots(isInventoryFull);
+        if (!isInventoryFull)
+        {
+                //add to empty slot
+                CheckForEmptyslots();
+                Debug.Log(isInventoryFull);
+
+                if (!isInventoryFull)
+                {
+                    itemToAdd.connectedObj = selectedInventorySlot.GetComponent<inventoryObj>();
+                    PutItemInSlot(itemToAdd, selectedInventorySlot);
+                }
+        }
+        else
+        {
+            Debug.Log("inventory is full");
+        }
+    }
+
+
+    private void RemoveItem(inventoryObj itemToRemove, int amount)
+    {
+        if (needCreateSlot)
+        {
+            if (itemToRemove.count > 1)
+            {
+
+            }
+        }
+        else
+        {
+
+        }
+    }
+
+    public void CheckForObject()
+    {
+
+    }
+
+    //drag and drop 
+
+    //delete
+
+
+    //drop item
+    //split item
+    //update invin info (slots left amount of slots used etc)
+
+    // make into list so invin can grow on infinite
+
+    //check for empty slots will most likely have a bug
+
+    //add a way to include scritable objs?
+
+
+
+}
