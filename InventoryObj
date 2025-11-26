@@ -21,7 +21,7 @@ public class InventoryObj : MonoBehaviour
     [SerializeField] Image itemImage;
     public scriptableInventoryObj objectInformation = null;
     [SerializeField] Sprite image;
-    [SerializeField] inventorySystem inventory;
+    [SerializeField] inventorySystem inventory; //Change to whatever inventory type is being used aka slot or spawn
 
 
 
