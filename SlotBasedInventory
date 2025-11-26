@@ -9,8 +9,7 @@ using UnityEngine.UI;
 public class inventorySystem : MonoBehaviour
 {
 
-    //This is a VERY general inventory system that forsakes performance for customizability. Some important notes is that there is not encapsulation and that the optimization is poor since there are 
-    // Alot of checks to make sure it is the customized version the user wants. When I use this script, I often delete a section that I do not need. 
+    //This is a simplified verion of the inventory script that is only for premade slots, rather than the option to have both, just increases performace
     #region variables
     [Header("Inventory Capacity")]
 
