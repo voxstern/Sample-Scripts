@@ -2,3 +2,5 @@ These are a few scripts that simply demonstrate my understanding of unity script
 Anything that is dependent on an inventory has a variable called InventorySystem, which should be changed to the specific type of inventory being used. InventoryObj is an example of this
 
 I left out my networking script since it is only for P2P Steam using their wrapper, and at the time I had guidance from my mentor.
+
+Most of these scripts are used in a variety of my small projects.
