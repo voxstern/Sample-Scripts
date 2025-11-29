@@ -75,7 +75,7 @@ public class SlotBasedInven : MonoBehaviour
     /// <summary>
     /// Removes an item from the inventory.
     /// </summary>
-    public void RemoveItem(InventoryObj slot, int amount)
+    public void RemoveItem(inventoryObj slot, int amount)
     {
         if (slot != null)
         {
@@ -86,5 +86,24 @@ public class SlotBasedInven : MonoBehaviour
             }
         }
     }
-}
+
+    public void UpdateAfterRemoval(inventoryObj slot)
+    {
+        if (slot == null) return;
+
+        // If the slot still has object info or a positive count, do nothing
+        if (slot.objectInformation != null && slot.count > 0) return;
+
+        // Remove from runtime tracking list if present
+        if (inventoryObjects != null && inventoryObjects.Contains(slot))
+            inventoryObjects.Remove(slot);
+
+        // Mark space free (clamp to avoid negative)
+        currUsedInventorySlots = Mathf.Max(0, currUsedInventorySlots - 1);
+
+        // Clear data just to be safe
+        slot.objectInformation = null;
+        slot.count = 0;
+        Debug.Log("Slot cleared and inventory updated.");
+    }
 }
