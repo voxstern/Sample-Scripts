@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InventorySystem : MonoBehaviour
+public class SlotBasedInven : MonoBehaviour
 {
     //Not completely finihed, still needs a few methods for polishing. - Removing item does not update on front end - 
 
