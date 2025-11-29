@@ -60,7 +60,6 @@ public class inventoryObj : MonoBehaviour
         {
             count = 0;
             objectInformation = null; // Clear the slot
-            inventory?.UpdateAfterRemoval(this); // Optional: notify the inventory system
         }else  if(count < 0)
         {
             Debug.LogWarning("This puts the object at less than 0");
