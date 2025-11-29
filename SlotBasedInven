@@ -75,24 +75,17 @@ public class SlotBasedInven : MonoBehaviour
     /// <summary>
     /// Removes an item from the inventory.
     /// </summary>
-    public void RemoveItem(inventoryObj slot, int amount)
+    public void RemoveItem(inventoryObj slot, int amount = 1)
     {
         if (slot != null)
         {
             slot.Remove(amount); // use encapsulated method in InventoryObj
-            if (slot.count == 0)
-            {
-                currUsedInventorySlots--;
-            }
         }
-    }
 
-    public void UpdateAfterRemoval(inventoryObj slot)
-    {
         if (slot == null) return;
 
-        // If the slot still has object info or a positive count, do nothing
-        if (slot.objectInformation != null && slot.count > 0) return;
+        // If the object still exists do nothing, UNLESS it is not countable, the remove it.
+        if (slot.objectInformation != null && slot.count > 0 && !slot.isCountable) return;
 
         // Remove from runtime tracking list if present
         if (inventoryObjects != null && inventoryObjects.Contains(slot))
