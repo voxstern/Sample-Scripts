@@ -4,11 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class InventoryObj : MonoBehaviour
+public class inventoryObj : MonoBehaviour
 {
-    //This is only added as a reference to the incomplete InventorySystem, but it does show my ability to impliment error handling?
-
-    // public GameObject origionalObject;    Add back when Pickup from interacting is implimented
+    // public GameObject origionalObject;
     public GameObject inventoryPrefab;
     public int count = 1;
     public bool isCountable;
@@ -21,13 +19,13 @@ public class InventoryObj : MonoBehaviour
     [SerializeField] Image itemImage;
     public scriptableInventoryObj objectInformation = null;
     [SerializeField] Sprite image;
-    [SerializeField] inventorySystem inventory; //Change to whatever inventory type is being used aka slot or spawn
+    [SerializeField] InventorySystem inventory;
 
 
 
     public virtual void EquipObject(TMP_Text titleTxt, TMP_Text descrpTxt = null, Image itemImg = null)
     {
-      // not yet implimented
+
     }
 
     public virtual void InitializeItem()
@@ -51,17 +49,22 @@ public class InventoryObj : MonoBehaviour
         description.text = objectInformation.description;
 
     }
+
     public void Remove(int amount)
+    {
+        if (!isCountable) return;
+
+        count -= amount;
+
+        if (count == 0)
         {
-            if (!isCountable) return;
-    
-            count -= amount;
-    
-            if (count <= 0)
-            {
-                count = 0;
-                objectInformation = null; // Clear the slot
-                inventory?.UpdateInventoryAfterRemoval(this); // Optional: notify the inventory system
-            }
+            count = 0;
+            objectInformation = null; // Clear the slot
+            inventory?.UpdateAfterRemoval(this); // Optional: notify the inventory system
+        }else  if(count < 0)
+        {
+            Debug.LogWarning("This puts the object at less than 0");
         }
+    }
+
 }
