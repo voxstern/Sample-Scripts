@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SlotBasedInven : MonoBehaviour
+public class InventorySystem : MonoBehaviour
 {
     //Not completely finihed, still needs a few methods for polishing. - Removing item does not update on front end - 
 
@@ -15,19 +15,9 @@ public class SlotBasedInven : MonoBehaviour
     [SerializeField] private GameObject inventorySlotPrefab;
     [SerializeField] private inventoryObj[] inventorySlots; // Pre-made slots
     [SerializeField] private bool areItemsStackable = true;
+    private List<inventoryObj> inventoryObjects = new List<inventoryObj>(); // list of empty slots
 
-    private inventoryObj[] cachedSlots;
-    private List<inventoryObj> inventoryObjects = new List<inventoryObj>();
 
-    private void Awake()
-    {
-        // Cache components for performance
-        cachedSlots = new inventoryObj[inventorySlots.Length];
-        for (int i = 0; i < inventorySlots.Length; i++)
-        {
-            cachedSlots[i] = inventorySlots[i].GetComponent<inventoryObj>();
-        }
-    }
 
     /// <summary>
     /// Adds an item to the inventory. Stacks if possible; otherwise, puts it in an empty slot.
@@ -36,9 +26,9 @@ public class SlotBasedInven : MonoBehaviour
     {
         if (areItemsStackable && itemToAdd.isCountable)
         {
-            for (int i = 0; i < cachedSlots.Length; i++)
+            for (int i = 0; i < inventorySlots.Length; i++)
             {
-                var slot = cachedSlots[i];
+                var slot = inventorySlots[i];
                 if (slot.objectInformation == itemToAdd && slot.count + amountToAdd <= maxCount)
                 {
                     slot.count += amountToAdd;
@@ -56,16 +46,16 @@ public class SlotBasedInven : MonoBehaviour
         }
 
         // Put in an empty slot
-        for (int i = 0; i < cachedSlots.Length; i++)
+        for (int i = 0; i < inventorySlots.Length; i++)
         {
-            var slot = cachedSlots[i];
+            var slot = inventorySlots[i];
             if (slot.objectInformation == null)
             {
                 slot.objectInformation = itemToAdd;
                 slot.count = amountToAdd;
                 slot.InitializeItem();
                 currUsedInventorySlots++;
-                inventoryObjects.Add(slot);
+                inventoryObjects.Remove(slot);
                 Debug.Log($"Added {itemToAdd.name} to empty slot {i}");
                 return;
             }
@@ -87,16 +77,16 @@ public class SlotBasedInven : MonoBehaviour
         // If the object still exists do nothing, UNLESS it is not countable, the remove it.
         if (slot.objectInformation != null && slot.count > 0 && !slot.isCountable) return;
 
+        
+        slot.objectInformation = null;
+        slot.count = 0;
         // Remove from runtime tracking list if present
-        if (inventoryObjects != null && inventoryObjects.Contains(slot))
-            inventoryObjects.Remove(slot);
+        inventoryObjects.Add(slot);
 
         // Mark space free (clamp to avoid negative)
         currUsedInventorySlots = Mathf.Max(0, currUsedInventorySlots - 1);
 
         // Clear data just to be safe
-        slot.objectInformation = null;
-        slot.count = 0;
         Debug.Log("Slot cleared and inventory updated.");
     }
 }
