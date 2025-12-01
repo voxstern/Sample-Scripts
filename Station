@@ -1,0 +1,222 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+public class Station : MonoBehaviour, interactableObject
+{
+    //This script is a simplified crafting mechanism for any process that takes ingridients and gives products over a certain time(time and ingridients are optional, can just give items). It could use some more defensive coding and some special features that are game by game (like crafting minigames, or special ingame effects).
+
+    [SerializeField] string promptMessage;
+    //Eventually change script to craft and store obj in there until taken out, with the ability to increase count. ATM, this is a crafting system that works directly for an inventory, perhaps add an inherintance system to fix.
+
+    //fututre possible additions
+    // Add option for minigame
+    //we need interact ingridients (recipie), the product, the 
+
+    [Header("Components and GameObjects")]
+    public InventorySystem invinTOAddTo;
+    [SerializeField] int stationUIInt;
+    [SerializeField] private playerController playerController;
+    [SerializeField] Product[] products;
+    [SerializeField] GameObject productMenuPrefab;
+    [SerializeField] GameObject ingridientAmountPrefab;
+    [SerializeField] UIHandler handler;
+    [SerializeField] List<IngridientFormat> IngridientsListed = new List<IngridientFormat>();
+
+
+
+    [Header("Crafting Logic")]
+    public Product productSelected;
+    [SerializeField] bool breakCoroutine = false;
+    bool isCrafting;
+    bool isMenuInit = false;
+    bool ingridientsTaken = false;
+
+
+    [Header("Station UI")]
+    public string prompMsg => promptMessage;
+    [SerializeField] private GameObject stationCanvas;
+    [SerializeField] TextMeshProUGUI recipieNameTxt;
+    [SerializeField] TextMeshProUGUI recipieDescTxt;
+    [SerializeField] TextMeshProUGUI recipieRarTxt;
+
+
+    [Header("Product Menu Prefab Sizing")]
+    [SerializeField] Transform prefabParent;
+    [SerializeField] Transform ingridientListParent;
+
+
+    /// <summary>
+    /// Opens station menu and checks if it has been set up before (begin setup if not)
+    /// </summary>
+    /// <param name="inventory"></param>
+    public void Interact(InventorySystem inventory = null)
+    {
+        if (isMenuInit == false) // checls to see if the staions menu has been accesed before, if not, it sets it up.
+        {
+            GenerateStationMenu();
+            isMenuInit = true;
+        }
+        handler.ToggleUI(stationUIInt);
+    }
+
+    /// <summary>
+    /// This function runs the wholep procces of a station from outside acces
+    /// </summary>
+    public void UseStation(){
+        TakeIngridients();
+        IngAmountOwned();
+        if (ingridientsTaken)
+        {
+            isCrafting = true;
+            StartCoroutine(StationActive());
+        }
+
+    }
+
+    /// <summary>
+    /// Sets the products crafting information in UI
+    /// </summary>
+    public void DisplayRecipie()
+    { 
+        // If any of these are triggered, somewher in your coding you have set a string to null, remember inspector sets an empty string to ""
+        recipieNameTxt.text = productSelected.title ?? "Title needed";
+        recipieDescTxt.text = productSelected.description ?? "Description Needed";
+        recipieRarTxt.text = productSelected.rarity ?? (productSelected +  "Rarity not set");
+        ReformatIng();
+    }
+
+
+    /// <summary>
+    /// This updates front end UI on wether or not the player has enough ingridients to craft an object, before crafting it
+    /// </summary>
+    public void ReformatIng()           //Rework Take ingridients to rely on this for check and remove the other check, Do a thorough evaluation that it is safe beforehand
+    {
+        int current = IngridientsListed.Count;
+        int target = productSelected.ingridients.Length;
+
+        // Update existing items
+        int toFormat = Math.Min(current, target);
+        for (int i = 0; i < toFormat; i++)
+        {
+            IngridientsListed[i].FormatIng(productSelected.ingridients[i], productSelected.amountNeeded[i]);
+        }
+
+        // Add missing items
+        for (int i = toFormat; i < target; i++)
+        {
+            var item = Instantiate(ingridientAmountPrefab, ingridientListParent.transform);
+            var comp = item.GetComponent<IngridientFormat>();
+            IngridientsListed.Add(comp);
+            comp.FormatIng(productSelected.ingridients[i], productSelected.amountNeeded[i]);
+        }
+
+        // Remove extra items
+        while (IngridientsListed.Count > target)
+        {
+            var last = IngridientsListed[^1];
+            Destroy(last.gameObject);
+            IngridientsListed.RemoveAt(IngridientsListed.Count - 1);
+        }
+    }
+
+
+
+    //Removes the ingridients from inventory and prepares for crafting
+    private void TakeIngridients()
+    {
+        if (!isCrafting)
+        {
+            for (int i = 0; i < productSelected.ingridients.Length; i++)
+            {
+                if (productSelected.ingridients != null && !(productSelected.ingridients[i].connectedObj.count >= productSelected.amountNeeded[i]))// != null is defensive for an item that does not need any ingridients
+                {                    
+                    for (int j = i; j > 0; j--)
+                    { 
+                            invinTOAddTo.AddItem(productSelected.ingridients[j], productSelected.amountNeeded[j]);
+                    }
+                    Debug.Log("You do not have sufficient ingridients!");
+                    return;
+                }
+                else
+                {
+                    invinTOAddTo.RemoveItem(productSelected.ingridients[i], productSelected.amountNeeded[i]);
+                }
+
+            }
+
+            ingridientsTaken = true;
+
+        }
+    }
+
+
+    //Actual timer mechanism to produce object.
+    IEnumerator StationActive()
+    {
+        Product productCache = productSelected; // Stops players from clicking another recipie to add that one instead
+        float productionTimer = productSelected.productionTime;
+        
+        while (productionTimer >= 0)
+        {
+            productionTimer -= Time.deltaTime;
+            if (breakCoroutine == true)
+            {
+                ReturnItems();
+                break;
+            }
+            
+            Debug.Log("productionTimer");
+            //Prouduce ingame effects that show produciton progress.
+            yield return null;
+        }
+
+        //Adds item to invin and resets system
+        invinTOAddTo.AddItem(productCache, productCache.amountToAdd);
+        isCrafting = false;
+        ingridientsTaken = false;
+    }
+
+
+    //returns items in the even that a products crafting is cancled
+    void ReturnItems()
+    {
+        // run this when someone cancels a recipie
+
+    }
+
+
+    //This creates the stations menu that shows a list of avaible products and their recipies. 
+    private void GenerateStationMenu()
+    {
+        if (products != null) // males sure values are assighned
+        {
+            for (int i = 0; i < products.Length; i++)
+            {
+                GameObject instance = Instantiate(productMenuPrefab, prefabParent);
+                var entry = instance.GetComponent<FormulateProductPrefab>();
+
+                entry.Format(products[i], this);
+
+            }
+        }
+    }
+
+    //This updates the text of the ing to match the amount you now have after crafting.   CHANGE NAME LATER
+
+    private void IngAmountOwned()
+    {
+        for (int i = 0; i < IngridientsListed.Count; i++)
+        {
+            IngridientsListed[i].UpdateAmount();
+        }
+    }
+
+
+}
