@@ -85,8 +85,6 @@ public class InventorySystem : MonoBehaviour
 
         // Mark space free (clamp to avoid negative)
         currUsedInventorySlots = Mathf.Max(0, currUsedInventorySlots - 1);
-
-        // Clear data just to be safe
         Debug.Log("Slot cleared and inventory updated.");
     }
 }
