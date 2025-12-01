@@ -14,6 +14,10 @@ public class Product : scriptableInventoryObj
     public string type;
     public int amountToAdd = 1;
 
+
+    /// <summary>
+    /// Sets UI information for the product, used for the Proudct menu prefab in station
+    /// </summary>
     public void InitializeRecipie(TextMeshProUGUI title, TextMeshProUGUI amount, int id, Image dispImage)
     {
         title.text = this.title;
