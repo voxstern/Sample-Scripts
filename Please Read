@@ -4,3 +4,5 @@ Anything that is dependent on an inventory has a variable called InventorySystem
 I left out my networking script since it is only for P2P Steam using their wrapper, and at the time I had guidance from my mentor.
 
 Most of these scripts are used in a variety of my small projects.
+none of them use event system, but implomentation would not be hard at all
+may add a sample script or update one of these for event system before the 5th of time allows.
