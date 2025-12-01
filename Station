@@ -4,18 +4,16 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-
+/// <summary>
+/// Station is a script that takes items and makes them over a certain time like crafting cooking or alchemy
+/// </summary>
 public class Station : MonoBehaviour, interactableObject
 {
-    //Station is a script that takes items and makes them over a certain time, crafting, cooking, alchemy you name it
     //Currently it does not queue recipies since the specific project I am working on has no need for it.
     //Eventually change script to craft and store obj in there until taken out, with the ability to increase count
-    ///ATM, this is a crafting system that works directly for an inventory, perhaps add an inherintance system to fix.
-    [SerializeField] string promptMessage;
+    //ATM, this is a crafting system that works directly for an inventory, perhaps add an inherintance system to fix.
 
-    //fututre possible additions
-    // Add option for minigame
-    //we need interact ingridients (recipie), the product, the 
+
 
     [Header("Components and GameObjects")]
     public InventorySystem invinTOAddTo; [Tooltip("The inventory that materials will be deposited in")] //A note that if networking p2p this will need to be changed throughout the script based on ownership and which player acceses 
@@ -39,11 +37,11 @@ public class Station : MonoBehaviour, interactableObject
 
     [Header("Station UI")]
     public string prompMsg => promptMessage; //The message the player will see when looking at the station
+    [SerializeField] string promptMessage; [Tooltip("The message the player will see when looking at the station")]//This is so the message can actually be set, and is what you set in inspector
     [SerializeField] private GameObject stationCanvas; // the empty gameobject used to hold everything to do with canvas
     [SerializeField] TextMeshProUGUI recipieNameTxt; 
     [SerializeField] TextMeshProUGUI recipieDescTxt;
     [SerializeField] TextMeshProUGUI recipieRarTxt;
-
 
     [Header("Product Menu Prefab Sizing")]
     [SerializeField] Transform prefabParent; //the content section of the product prefabs scroll view (or just the container in general) DO NOT FORGET A LAYOT GROUP OR GRID
