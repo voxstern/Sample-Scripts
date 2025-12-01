@@ -1,0 +1,23 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+[CreateAssetMenu(fileName = "Assets", menuName = "product")]
+
+public class Product : scriptableInventoryObj
+{
+    //The information for a craftable Obj that goes into station
+
+    public float productionTime;
+    public scriptableInventoryObj[] ingridients;
+    public int[] amountNeeded;
+    public string rarity;
+    public string type;
+    public int amountToAdd = 1;
+
+    public void InitializeRecipie(TextMeshProUGUI title, TextMeshProUGUI amount, int id, Image dispImage)
+    {
+        title.text = this.title;
+        amount.text = amountNeeded[id].ToString();
+        dispImage.sprite = this.itemImage;
+    }
+}
