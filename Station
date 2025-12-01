@@ -10,52 +10,52 @@ using UnityEngine.UI;
 using TMPro;
 public class Station : MonoBehaviour, interactableObject
 {
-    //This script is a simplified crafting mechanism for any process that takes ingridients and gives products over a certain time(time and ingridients are optional, can just give items). It could use some more defensive coding and some special features that are game by game (like crafting minigames, or special ingame effects).
-
+    //Station is a script that takes items and makes them over a certain time, crafting, cooking, alchemy you name it
+    //Currently it does not queue recipies since the specific project I am working on has no need for it.
+    //Eventually change script to craft and store obj in there until taken out, with the ability to increase count
+    ///ATM, this is a crafting system that works directly for an inventory, perhaps add an inherintance system to fix.
     [SerializeField] string promptMessage;
-    //Eventually change script to craft and store obj in there until taken out, with the ability to increase count. ATM, this is a crafting system that works directly for an inventory, perhaps add an inherintance system to fix.
 
     //fututre possible additions
     // Add option for minigame
     //we need interact ingridients (recipie), the product, the 
 
     [Header("Components and GameObjects")]
-    public InventorySystem invinTOAddTo;
-    [SerializeField] int stationUIInt;
+    public InventorySystem invinTOAddTo; [Tooltip("The inventory that materials will be deposited in")] //A note that if networking p2p this will need to be changed throughout the script based on ownership and which player acceses 
+    [SerializeField] int stationUIInt; [Tooltip("An int used to work with handler or UIHandler for setting UI's active")]
     [SerializeField] private playerController playerController;
-    [SerializeField] Product[] products;
-    [SerializeField] GameObject productMenuPrefab;
-    [SerializeField] GameObject ingridientAmountPrefab;
-    [SerializeField] UIHandler handler;
-    [SerializeField] List<IngridientFormat> IngridientsListed = new List<IngridientFormat>();
+    [SerializeField] Product[] products; [Tooltip("An array of craftable proudcts for the player to make")]
+    [SerializeField] GameObject productMenuPrefab; [Tooltip("The prefab that is used to display the information of a product, like its description")]
+    [SerializeField] GameObject ingridientAmountPrefab; [Tooltip("A prefab that displats an ingridients information, like how much is needed to craft something")]
+    [SerializeField] UIHandler handler; [Tooltip("A link to a UI managing system, replace when need or use event system")]
+     List<IngridientFormat> IngridientsListed = new List<IngridientFormat>(); // this is a list of currently displayed ingridients, will be used for object pooling to increase performance
 
 
 
     [Header("Crafting Logic")]
-    public Product productSelected;
-    [SerializeField] bool breakCoroutine = false;
-    bool isCrafting;
-    bool isMenuInit = false;
-    bool ingridientsTaken = false;
+    public Product productSelected; // The currently selected product either by the player or the system.
+    [SerializeField] bool breakCoroutine = false; //Used to cancel crafting, with a SZ for manual 
+    bool isCrafting; // is the station currently running the Coroutine, makes sure the player cannot craft too much at once
+    bool isMenuInit = false; // Has the stations menu been opened before, makes sure the station does not duplicate it's list of products
+    bool ingridientsTaken = false; // have the ingridients needed to craft something been taken, prevents free craft
 
 
     [Header("Station UI")]
-    public string prompMsg => promptMessage;
-    [SerializeField] private GameObject stationCanvas;
-    [SerializeField] TextMeshProUGUI recipieNameTxt;
+    public string prompMsg => promptMessage; //The message the player will see when looking at the station
+    [SerializeField] private GameObject stationCanvas; // the empty gameobject used to hold everything to do with canvas
+    [SerializeField] TextMeshProUGUI recipieNameTxt; 
     [SerializeField] TextMeshProUGUI recipieDescTxt;
     [SerializeField] TextMeshProUGUI recipieRarTxt;
 
 
     [Header("Product Menu Prefab Sizing")]
-    [SerializeField] Transform prefabParent;
-    [SerializeField] Transform ingridientListParent;
+    [SerializeField] Transform prefabParent; //the content section of the product prefabs scroll view (or just the container in general) DO NOT FORGET A LAYOT GROUP OR GRID
+    [SerializeField] Transform ingridientListParent; // the content of ingridients prefab scroll view (or just the container in general)
 
 
     /// <summary>
     /// Opens station menu and checks if it has been set up before (begin setup if not)
     /// </summary>
-    /// <param name="inventory"></param>
     public void Interact(InventorySystem inventory = null)
     {
         if (isMenuInit == false) // checls to see if the staions menu has been accesed before, if not, it sets it up.
