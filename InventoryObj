@@ -58,7 +58,7 @@ public class inventoryObj : MonoBehaviour
 
         if (count == 0)
         {
-            count = 0;
+            objectInformation.connectedObj = null;
             objectInformation = null; // Clear the slot
         }else  if(count < 0)
         {
