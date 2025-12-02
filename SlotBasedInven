@@ -11,6 +11,8 @@ public class InventorySystem : MonoBehaviour
     [SerializeField] private int currUsedInventorySlots = 0;
     [SerializeField] private int maxCount = 99;
 
+    [Space]
+
     [Header("Inventory Objects")]
     [SerializeField] private GameObject inventorySlotPrefab;
     [SerializeField] private inventoryObj[] inventorySlots; // Pre-made slots
