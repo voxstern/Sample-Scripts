@@ -25,7 +25,7 @@ public class Station : MonoBehaviour, interactableObject
     [SerializeField] UIHandler handler; [Tooltip("A link to a UI managing system, replace when need or use event system")]
      List<IngridientFormat> IngridientsListed = new List<IngridientFormat>(); // this is a list of currently displayed ingridients, will be used for object pooling to increase performance
 
-
+    [Space]
 
     [Header("Crafting Logic")]
     public Product productSelected; // The currently selected product either by the player or the system.
@@ -34,6 +34,7 @@ public class Station : MonoBehaviour, interactableObject
     bool isMenuInit = false; // Has the stations menu been opened before, makes sure the station does not duplicate it's list of products
     bool ingridientsTaken = false; // have the ingridients needed to craft something been taken, prevents free craft
 
+    [Space]
 
     [Header("Station UI")]
     public string prompMsg => promptMessage; //The message the player will see when looking at the station
@@ -42,6 +43,8 @@ public class Station : MonoBehaviour, interactableObject
     [SerializeField] TextMeshProUGUI recipieNameTxt; 
     [SerializeField] TextMeshProUGUI recipieDescTxt;
     [SerializeField] TextMeshProUGUI recipieRarTxt;
+
+    [Space]
 
     [Header("Product Menu Prefab Sizing")]
     [SerializeField] Transform prefabParent; //the content section of the product prefabs scroll view (or just the container in general) DO NOT FORGET A LAYOT GROUP OR GRID
