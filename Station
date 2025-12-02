@@ -36,7 +36,7 @@ public class Station : MonoBehaviour, interactableObject
     bool isMenuInit = false; // Has the stations menu been opened before, makes sure the station does not duplicate it's list of products
     bool ingridientsTaken = false; // have the ingridients needed to craft something been taken, prevents free craft
 
-    [Space]
+
 
     [Header("Station UI")]
     public string prompMsg => promptMessage; //The message the player will see when looking at the station
